@@ -1,0 +1,21 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  form(name="add-load", method="post", id='forms')
+    div.input
+      p.label Load Name
+      input(type="text", name="loadName")
+      p.label Load Description
+      input(type="text", name="loadDescription")
+      p.label Caliber
+      select(id="xxx", name="loadCaliber")
+        each cal in caliber
+          option(value="#{cal.calName.S}") #{cal.calName.S}
+      p.label Powder
+      select(id="xxx", name="loadPowder")
+        each pow in powder
+          option(value="#{pow.powderName.S}") #{pow.powderName.S}
+      input(type="submit", name="submit")

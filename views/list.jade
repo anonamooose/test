@@ -1,0 +1,38 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  p Welcome to #{title}
+  p mother #{dinglehopper} crazy pants
+  table
+    thead
+      tr
+        th Caliber Name
+        th Class
+        th casetype
+        th primertype
+      tbody
+        each item in data
+          - console.log(JSON.stringify(item));
+          tr
+            
+            - if (typeof(item.calName) !== 'undefined'){
+            td= item.calName.S
+            - }
+            
+            - if (typeof(item.calClass) !== 'undefined'){
+            td= item.calClass.S
+            - }
+            - if (typeof(item.caseType) !== 'undefined'){
+            td= item.caseType.S
+            - }
+            - if (typeof(item.primerType) !== 'undefined'){
+            td= item.primerType.S
+            - }
+
+
+            
+           
+       

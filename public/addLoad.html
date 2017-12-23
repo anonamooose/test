@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body onLoad="scanData();">
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
+
+<script type="text/javascript">
+AWS.config.update({
+  region: "us-west-2",
+  // The endpoint should point to the local or remote computer where DynamoDB (downloadable) is running.
+  endpoint: 'http://localhost:8000',
+  /*
+    accessKeyId and secretAccessKey defaults can be used while using the downloadable version of DynamoDB. 
+    For security reasons, do not store AWS Credentials in your files. Use Amazon Cognito instead.
+  */
+  accessKeyId: "fakeMyKeyId",
+  secretAccessKey: "fakeSecretAccessKey"
+});
+
+  /* 
+     Uncomment the following code to configure Amazon Cognito and make sure to 
+     remove the endpoint, accessKeyId and secretAccessKey specified in the code above. 
+     Make sure Cognito is available in the DynamoDB web service region (specified above).
+     Finally, modify the IdentityPoolId and the RoleArn with your own.
+  */
+/*
+AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+IdentityPoolId: "us-west-2:12345678-1ab2-123a-1234-a12345ab12",
+RoleArn: "arn:aws:iam::123456789012:role/dynamocognito"
+});
+*/
+
+var dynamodb = new AWS.DynamoDB();
+var docClient = new AWS.DynamoDB.DocumentClient();
+
+
+function scanData() {
+
+    var params = {
+        TableName: "Calibers",
+
+    };
+
+    docClient.scan(params, onScan);
+
+    function onScan(err, data) {
+        if (err) {
+            document.getElementById('textarea').innerHTML += "Unable to scan the table: " + "\n" + JSON.stringify(err, undefined, 2);
+        } else {
+            // Print all the movies
+            
+            var sel = document.getElementById('loadCaliber');
+            var fragment = document.createDocumentFragment();
+            
+                data.Items.forEach(function(caliber) {
+                var opt = document.createElement('option');
+                opt.innerHTML = caliber.calName + " " + caliber.calClass;
+                opt.value = caliber.calName;
+                fragment.appendChild(opt);
+            });
+
+            sel.appendChild(fragment);
+                 
+        }
+    }
+}
+
+
+</script>
+<table>
+  <tr>
+    <td><a href="/addcaliber.html">add caliber</a></td>
+    <td><a href="/list">list calibers</a></td>
+    <td><a href="/addload.html">add load</a></td>
+  </tr>
+</table>
+
+
+<table>
+<form action="/addLoad" method="POST">
+<tr>
+	<td>
+  		<select name="loadCaliber" id="loadCaliber"></select>
+  	</td>
+</tr>
+<tr>
+	<td>
+  		<input type="text" placeholder="Load Name" name="loadName">
+  	</td>
+</tr>
+<tr>
+	<td>
+  		<input type="text" placeholder="Load Primer" name="loadPrimer">
+  	</td>
+</tr>
+<tr>
+	<td>
+  		<input type="text" placeholder="Load Powder" name="loadPowder">
+  	</td>
+</tr>
+<tr>
+	<td>
+  		<input type="text" placeholder="Charge" name="loadCharge">
+  	</td>
+</tr>
+<tr>
+	<td>
+  		<input type="text" placeholder="Bullet" name="loadBullet">
+  	</td>
+</tr>
+<tr>
+	<td>
+  		<input type="text" placeholder="BulletWeight" name="loadBulletWeight">
+  	</td>
+</tr>
+<tr>
+     <td><button type="submit">Submit</button></td>
+</tr>
+
+</form>
+</table>
+</body>
+</html>

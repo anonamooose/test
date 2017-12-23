@@ -1,0 +1,29 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  table(id="customers")
+    thead
+      tr
+        th Powder Name
+        th Powder Brand
+        th Powder Class
+        th Powder Notes
+      tbody
+        each item in data
+          - console.log(JSON.stringify(item));
+          tr
+            - if (typeof(item.powderName) !== 'undefined'){
+            td= item.powderName.S
+            - }            
+            - if (typeof(item.powderBrand) !== 'undefined'){
+            td= item.powderBrand.S
+            - }
+            - if (typeof(item.powderClass) !== 'undefined'){
+            td= item.powderClass.S
+            - }
+            - if (typeof(item.powderNotes) !== 'undefined'){
+            td= item.powderNotes.S
+            - }   

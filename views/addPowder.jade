@@ -1,0 +1,21 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  form(name="add-powder", method="post")
+    div.input
+      span.label Powder Name
+      input(type="text", name="powderName")
+    div.input
+      span.label Powder Brand
+      input(type="text", name="powderBrand")
+    div.input
+      span.label Powder Class
+      input(type="text", name="powderClass")
+    div.input
+      span.label Powder Notes
+      input(type="text", name="powderNotes")
+    div.action
+      input(type="submit", name="submit")

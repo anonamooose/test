@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<table>
+  <tr>
+    <td><a href="/addcaliber.html">add caliber</a></td>
+    <td><a href="/list">list calibers</a></td>
+  </tr>
+</table>
+
+
+<table>
+<form action="/add" method="POST">
+<tr>
+	<td>
+  		<input type="text" placeholder="Caliber Name" name="calName">
+  	</td>
+</tr>
+<tr>
+	<td>
+		<select name=calClass>
+			<option value="Pistol">Pistol</option>
+			<option value="Rifle">Rifle</option>
+			<option value="Shotgun">Shotgun</option>
+		</select>
+  		<!--  <input type="text" placeholder="Caliber Class" name="calClass">-->
+  	</td>
+</tr>
+<tr>
+	<td>
+		<select name=caseType>
+			<option value="Straightwall">Straightwall</option>
+			<option value="Bottleneck">Bottleneck</option>
+		</select>
+  		<!-- <input type="text" placeholder="Case Type" name="caseType">-->
+  	</td>
+</tr>
+<tr>
+	<td>
+	<select name=primerType>
+			<option value="Small Pistol">Small Pistol</option>
+			<option value="Large Pistol">Small Pistol</option>
+			<option value="Small Rifle">Small Rifle</option>
+			<option value="Large Rifle">Small Rifle</option>
+			<option value="Shotgun">Shotgun</option>
+		</select>
+  		<!--<input type="text" placeholder="Primer Type" name="primerType">-->
+  	</td>
+</tr>
+<tr>
+     <button type="submit">Submit</button>
+</tr>
+
+</form>
+</table>
+</body>
+</html>
