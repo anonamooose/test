@@ -1,0 +1,26 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  form(name="add-powder", method="post", id="forms")
+    div.input
+      span.label Powder Name
+      input(type="text", name="powderName", value=data[0].powderName)
+    div.input
+      span.label Powder Brand
+      input(type="text", name="powderBrand", value=data[0].powderBrand)
+    div.input
+      span.label Powder Class
+      input(type="text", name="powderClass", value=data[0].powderClass)
+    div.input
+      span.label Powder Notes
+      input(type="text", name="powderNotes", value=data[0].powderNotes)
+    div.action
+      input(type="submit", name="submit")
+      input(type="hidden", name="powderId", value=data[0]._id)
+
+  a(href='deletePowder?powderId=' + data[0]._id)
+    img.image(src='small-delete-hi.png' height='20px')
+  |  delete 

@@ -1,0 +1,35 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  form(name="edit-load", method="post", id="forms")
+    div.input
+      span.label Caliber Class
+      input(type="text", name="loadDescription", value=data[0].loadDescription)
+    div.input
+      span.label Case Type
+      input(type="text", name="loadCaliber", value=data[0].loadCaliber)
+    div.input
+      span.label Primer Type
+      input(type="text", name="loadPowder", value=data[0].loadPowder)
+    div.input
+      span.label Primer Type
+      input(type="text", name="loadPowderWeight", value=data[0].loadPowderWeight)
+    div.input
+      span.label Primer Type
+      input(type="text", name="loadBullet", value=data[0].loadBullet)
+    div.input
+      span.label Primer Type
+      input(type="text", name="loadBulletDiameter", value=data[0].loadBulletDiameter)
+    div.input
+      span.label Primer Type
+      input(type="text", name="loadBulletComposition", value=data[0].loadBulletComposition)
+    div.action
+      input(type="submit", name="submit")
+      input(type="hidden", name="loadId", value=data[0]._id)
+
+  a(href='deleteLoad?loadId=' + data[0]._id)
+    img.image(src='small-delete-hi.png' height='20px')
+  |  delete 

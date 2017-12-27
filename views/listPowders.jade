@@ -14,16 +14,16 @@ block content
       tbody
         each item in data
           - console.log(JSON.stringify(item));
-          tr
+          tr(onclick="javascript:location.href='editPowder?powderId=" + item._id + "'")
             - if (typeof(item.powderName) !== 'undefined'){
-            td= item.powderName.S
+            td= item.powderName
             - }            
             - if (typeof(item.powderBrand) !== 'undefined'){
-            td= item.powderBrand.S
+            td= item.powderBrand
             - }
             - if (typeof(item.powderClass) !== 'undefined'){
-            td= item.powderClass.S
+            td= item.powderClass
             - }
             - if (typeof(item.powderNotes) !== 'undefined'){
-            td= item.powderNotes.S
+            td= item.powderNotes
             - }   

@@ -1,0 +1,26 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  form(name="edit-caliber", method="post", id="forms")
+    div.input
+      span.label Caliber Name
+      input(type="text", name="calName", value=data[0].calName)
+    div.input
+      span.label Caliber Class
+      input(type="text", name="calClass", value=data[0].calClass)
+    div.input
+      span.label Case Type
+      input(type="text", name="caseType", value=data[0].caseType)
+    div.input
+      span.label Primer Type
+      input(type="text", name="primerType", value=data[0].primerType)
+    div.action
+      input(type="submit", name="submit")
+      input(type="hidden", name="caliberId", value=data[0]._id)
+
+  a(href='deleteCaliber?caliberId=' + data[0]._id)
+    img.image(src='small-delete-hi.png' height='20px')
+  |  delete 

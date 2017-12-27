@@ -7,27 +7,19 @@ block content
   table(id="customers")
     thead
       tr
-        th Load Name
         th Load Description
         th Load Caliber
         th Load Powder
-        th Load UUID
       tbody
         each item in data
           - console.log(JSON.stringify(item));
-          tr(onclick="javascript:location.href='detailLoad?loadUUID=" + item.loadUUID.S + "'")
-            - if (typeof(item.loadName) !== 'undefined'){
-            td= item.loadName.S
-            - }
+          tr(onclick="javascript:location.href='detailLoad?loadId=" + item._id + "'")
             - if (typeof(item.loadDescription) !== 'undefined'){
-            td= item.loadDescription.S
+            td= item.loadDescription
             - }            
             - if (typeof(item.loadCaliber) !== 'undefined'){
-            td= item.loadCaliber.S
+            td= item.loadCaliber
             - }            
             - if (typeof(item.loadPowder) !== 'undefined'){
-            td= item.loadPowder.S
-            - }            
-            - if (typeof(item.loadUUID) !== 'undefined'){
-            td= item.loadUUID.S
+            td= item.loadPowder
             - }

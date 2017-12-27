@@ -7,27 +7,62 @@ block content
   table(id="customers")
     thead
       tr
-        th Load Name
         th Load Description
         th Load Caliber
         th Load Powder
-        th Load UUID
+        th Powder Weight
+        th Bullet
+        th Bullet Diameter 
+        th Bullet Composition
       tbody
         each item in data
           - console.log(JSON.stringify(item));
-          tr
-            - if (typeof(item.loadName) !== 'undefined'){
-            td= item.loadName.S
-            - }
+          tr(onclick="javascript:location.href='editLoad?loadId=" + item._id + "'")
             - if (typeof(item.loadDescription) !== 'undefined'){
-            td= item.loadDescription.S
+            td= item.loadDescription
             - }            
             - if (typeof(item.loadCaliber) !== 'undefined'){
-            td= item.loadCaliber.S
+            td= item.loadCaliber
             - }            
             - if (typeof(item.loadPowder) !== 'undefined'){
-            td= item.loadPowder.S
+            td= item.loadPowder
             - }            
-            - if (typeof(item.loadUUID) !== 'undefined'){
-            td= item.loadUUID.S
+            - if (typeof(item.loadPowderWeight) !== 'undefined'){
+            td= item.loadPowderWeight
             - }
+            - if (typeof(item.loadBullet) !== 'undefined'){
+            td= item.loadBullet
+            - }
+            - if (typeof(item.loadBulletDiameter) !== 'undefined'){
+            td= item.loadBulletDiameter
+            - }
+            - if (typeof(item.loadBulletComposition) !== 'undefined'){
+            td= item.loadBulletComposition
+            - }
+
+  h1=""
+  table
+    thead
+      tr
+        th Comments
+
+      tbody
+        each comment in comments
+          - console.log("found comments: " + JSON.stringify(comment));
+          tr
+            - if (typeof(comment.loadComment) !== 'undefined'){
+            td= comment.loadComment
+            - }            
+            - var timestamp = parseInt(comment._id.toString().substr(0,8), 16)*1000; 
+            - var date = new Date(timestamp); 
+            - console.log(date);
+            td= date
+  
+  h1=""
+  form(name="addcomment", method="post", action="addLoadComments")
+    div.input
+      span.label Add a comment
+      input(type="textarea", name="loadComment")
+    div.action
+      input(type="submit", name="submit", value="Add")
+      input(type="hidden", name="loadId", value=data[0]._id)

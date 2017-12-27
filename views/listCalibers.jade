@@ -4,32 +4,29 @@ block header
 
 block content
   h1= title
-  p Welcome to #{title}
-  p mother #{dinglehopper} crazy pants
-  table
+  table(id="customers")
     thead
       tr
         th Caliber Name
-        th Class
-        th casetype
-        th primertype
+        th Caliber Class
+        th Case Type
+        th Primer Type
       tbody
         each item in data
           - console.log(JSON.stringify(item));
-          tr
-            
+          tr(onclick="javascript:location.href='editCaliber?caliberId=" + item._id + "'")  
             - if (typeof(item.calName) !== 'undefined'){
-            td= item.calName.S
+            td= item.calName
             - }
             
             - if (typeof(item.calClass) !== 'undefined'){
-            td= item.calClass.S
+            td= item.calClass
             - }
             - if (typeof(item.caseType) !== 'undefined'){
-            td= item.caseType.S
+            td= item.caseType
             - }
             - if (typeof(item.primerType) !== 'undefined'){
-            td= item.primerType.S
+            td= item.primerType
             - }
 
 
