@@ -4,6 +4,9 @@ block header
 
 block content
   h1= title
+  h2= profile.displayName
+  - console.log("profile " + JSON.stringify(profile) + " email " + JSON.stringify(email) );
+  
   table(id="customers")
     thead
       tr

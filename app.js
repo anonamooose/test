@@ -30,7 +30,132 @@ var url = "mongodb://10.6.6.22:27017/handloads";
 
 var app = express();
 
+var session = require('express-session')
+
+const sessionConfig = {
+  resave: false,
+  saveUninitialized: false,
+  //secret: config.get('SECRET'),
+  secret: 'SECRET',
+  signed: true
+};
+
+app.use(session(sessionConfig));
+
+
 app.use(bodyParser.urlencoded({extended: true}))
+
+
+
+
+const passport = require('passport');
+
+
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+function extractProfile (profile) {
+  let imageUrl = '';
+  if (profile.photos && profile.photos.length) {
+    imageUrl = profile.photos[0].value;
+  }
+  return {
+    id: profile.id,
+    displayName: profile.displayName,
+    image: imageUrl
+  };
+}
+
+// Configure the Google strategy for use by Passport.js.
+//
+// OAuth 2-based strategies require a `verify` function which receives the
+// credential (`accessToken`) for accessing the Google API on the user's behalf,
+// along with the user's profile. The function must invoke `cb` with a user
+// object, which will be set at `req.user` in route handlers after
+// authentication.
+passport.use(new GoogleStrategy({
+//  clientID: config.get('OAUTH2_CLIENT_ID'),
+//  clientSecret: config.get('OAUTH2_CLIENT_SECRET'),
+// callbackURL: config.get('OAUTH2_CALLBACK'),
+clientID: '727273173081-9llriue33krrtn0cb9bqrgj9r13aibci.apps.googleusercontent.com',
+clientSecret: 'Seh3oFkCpJvi2IbbQmO-pXFY',
+callbackURL: 'http://www.xcryptolab.com/auth/google/callback',
+
+  accessType: 'offline'
+}, (accessToken, refreshToken, profile, cb) => {
+  // Extract the minimal profile information we need from the profile object
+  // provided by Google
+  cb(null, extractProfile(profile));
+}));
+
+passport.serializeUser((user, cb) => {
+  cb(null, user);
+});
+passport.deserializeUser((obj, cb) => {
+  cb(null, obj);
+});
+
+
+// Middleware that requires the user to be logged in. If the user is not logged
+// in, it will redirect the user to authorize the application and then return
+// them to the original URL they requested.
+function authRequired (req, res, next) {
+  if (!req.user) {
+    req.session.oauth2return = req.originalUrl;
+    console.log("req variable dump: " + JSON.stringify(req.originalUrl));
+    console.log("lastindex" + (req.originalUrl.lastIndexOf("/auth", 0) === 0))
+    if (req.originalUrl.lastIndexOf("/auth", 0) === 0) {
+    	console.log("found auth request, skipping login");
+    	//next();
+    } else {
+    	console.log("found page that needs auth, redirecting");
+		return res.redirect('/auth/login');
+  	}
+  }
+
+  next();
+}
+
+// Middleware that exposes the user's profile as well as login/logout URLs to
+// any templates. These are available as `profile`, `login`, and `logout`.
+function addTemplateVariables (req, res, next) {
+  res.locals.profile = req.user;
+  res.locals.login = `/auth/login?return=${encodeURIComponent(req.originalUrl)}`;
+  res.locals.logout = `/auth/logout?return=${encodeURIComponent(req.originalUrl)}`;
+  console.log("Session vars " + JSON.stringify(req.session) + " user: " + res.user );
+  next();
+}
+
+
+
+
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+
+//app.use(authRequired);
+
+
+app.get(
+  // Login url
+  '/auth/login',
+
+  // Save the url of the user's current page so the app can redirect back to
+  // it after authorization
+  (req, res, next) => {
+    if (req.query.return) {
+      req.session.oauth2return = req.query.return;
+    }
+    next();
+  },
+
+  // Start OAuth 2 flow using Passport.js
+  passport.authenticate('google', { scope: ['email', 'profile'] })
+);
+
+
+
 
 
 app.get('/', (req, res) => {
@@ -41,6 +166,34 @@ app.get('/', (req, res) => {
 })
 
 
+app.get(
+  // OAuth 2 callback url. Use this url to configure your OAuth client in the
+  // Google Developers console
+  '/auth/google/callback',
+
+  // Finish OAuth 2 flow using Passport.js
+  passport.authenticate('google'),
+
+  // Redirect back to the original page, if any
+  (req, res) => {
+    const redirect = req.session.oauth2return || '/';
+    delete req.session.oauth2return;
+    res.redirect(redirect);
+  }
+);
+
+
+app.get('/logout', function(req, res) {
+    console.log("logged out!");
+    req.logout();
+    res.redirect('https://www.google.com');
+});
+
+
+
+
+
+
 
 // ########################################################################## //
 // *************************** Caliber Section ******************************* //
@@ -48,7 +201,7 @@ app.get('/', (req, res) => {
 
 
 
-app.get('/addCaliber', (req, res) => {
+app.get('/addCaliber', authRequired, (req, res) => {
 	  //console.log(req.body)
 	  
 	 console.log("Adding a new caliber...");
@@ -59,7 +212,7 @@ app.get('/addCaliber', (req, res) => {
 })	
 	
 	
-app.post('/addCaliber', (req, res) => {
+app.post('/addCaliber', authRequired, (req, res) => {
 	  //console.log(req.body)
 
 
@@ -89,7 +242,7 @@ app.post('/addCaliber', (req, res) => {
 	 //res.send(200,req.body);
 	})
 
-app.get('/listCalibers', function (req, res) {
+app.get('/listCalibers', authRequired, function (req, res) {
 	console.log("entered into list route");
        
 	MongoClient.connect(url, function(err, db) {
@@ -114,7 +267,7 @@ app.get('/listCalibers', function (req, res) {
 // /\/\/\/\/\/\/
 
 
-app.get('/editCaliber', (req, res) => {
+app.get('/editCaliber', authRequired, (req, res) => {
   //console.log(req.body)
   
   var queryurl = require('url'); 
@@ -155,7 +308,7 @@ app.get('/editCaliber', (req, res) => {
 })	
 
 
-app.post('/editCaliber', (req, res) => {
+app.post('/editCaliber', authRequired, (req, res) => {
 	  //console.log(req.body)
 	
 	  
@@ -203,7 +356,7 @@ app.post('/editCaliber', (req, res) => {
 		
 
 
-app.get('/deleteCaliber', (req, res) => {
+app.get('/deleteCaliber', authRequired, (req, res) => {
   //console.log(req.body)
   
   var queryurl = require('url'); 
@@ -267,7 +420,7 @@ app.get('/deleteCaliber', (req, res) => {
 
 
 	
-	app.get('/addPowder', (req, res) => {
+	app.get('/addPowder', authRequired, (req, res) => {
 	  //console.log(req.body)
 	  
 	 console.log("Adding a new Powder...");
@@ -309,7 +462,7 @@ app.get('/deleteCaliber', (req, res) => {
 	 //res.send(200,req.body);
 })
 
-app.get('/listPowders', function (req, res) {
+app.get('/listPowders', authRequired, function (req, res) {
 	console.log("entered into list powder route");
 	
 
@@ -334,7 +487,7 @@ app.get('/listPowders', function (req, res) {
 
 	
 	
-app.get('/editPowder', (req, res) => {
+app.get('/editPowder', authRequired, (req, res) => {
   //console.log(req.body)
   
   var queryurl = require('url'); 
@@ -375,7 +528,7 @@ app.get('/editPowder', (req, res) => {
 })	
 
 
-app.post('/editPowder', (req, res) => {
+app.post('/editPowder', authRequired, (req, res) => {
 	  //console.log(req.body)
 	
 	  
@@ -418,7 +571,7 @@ app.post('/editPowder', (req, res) => {
 		
 
 
-app.get('/deletePowder', (req, res) => {
+app.get('/deletePowder', authRequired, (req, res) => {
   //console.log(req.body)
   
   var queryurl = require('url'); 
@@ -464,7 +617,7 @@ app.get('/deletePowder', (req, res) => {
 
 
 
-app.get('/addLoads', (req, res) => {
+app.get('/addLoads', authRequired, (req, res) => {
 	  //console.log(req.body)
 	
 	
@@ -507,7 +660,7 @@ app.get('/addLoads', (req, res) => {
 
 });
 
-app.post('/addLoads', (req, res) => {
+app.post('/addLoads', authRequired, (req, res) => {
 	  //console.log(req.body)
 	
 	 console.log("Adding a new load...");
@@ -556,7 +709,7 @@ app.get('/listLoads', function (req, res) {
 
 });
 
-app.get('/detailLoad', function (req, res) {
+app.get('/detailLoad', authRequired, addTemplateVariables, function (req, res) {
 	console.log("entered into load details route " + req.query.loadId);
 	
 	
@@ -633,7 +786,7 @@ app.get('/detailLoad', function (req, res) {
 });
 
 
-app.post('/addLoadComments', (req, res) => {
+app.post('/addLoadComments', authRequired, (req, res) => {
 	  //console.log(req.body)
 	
 	 console.log("Adding a load comment...");
@@ -663,7 +816,7 @@ app.post('/addLoadComments', (req, res) => {
 // /\/\/\/\/\/\/\/\/\/\/\/\/
 
 
-app.get('/editLoad', (req, res) => {
+app.get('/editLoad', authRequired, (req, res) => {
   //console.log(req.body)
   
   var queryurl = require('url'); 
@@ -767,7 +920,7 @@ MongoClient.connect(url, function(err, db) {
 })	
 
 
-app.post('/editLoad', (req, res) => {
+app.post('/editLoad', authRequired, (req, res) => {
 	  //console.log(req.body)
 	
 	  
@@ -881,3 +1034,4 @@ app.get('/qwerty', asdf.ffff);
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
+
