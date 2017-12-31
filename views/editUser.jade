@@ -1,0 +1,26 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  form(name="edit-user", method="post", id="forms")
+    div.input
+      span.label Caliber Class
+      input(type="text", name="userIdPId", value=data[0].userIdPId)
+    div.input
+      span.label Case Type
+      input(type="text", name="IdPdisplayName", value=data[0].IdPdisplayName)
+    div.input
+      span.label Primer Type
+      input(type="text", name="preferredDisplayName", value=data[0].preferredDisplayName)
+    div.input
+      span.label User Class (user/admin)
+      input(type="text", name="userClass", value=data[0].userClass)
+    div.action
+      input(type="submit", name="submit")
+      input(type="hidden", name="userId", value=data[0]._id)
+
+  a(href='deleteUser?userId=' + data[0]._id)
+    img.image(src='small-delete-hi.png' height='20px')
+  |  delete 

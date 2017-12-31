@@ -1,0 +1,31 @@
+extends layout
+
+block header
+
+block content
+  h1= title
+  table(id="customers")
+    thead
+      tr
+        th IdP ID
+        th IdP Display Name
+        th Preferred Display Name
+      tbody
+        each item in data
+          - console.log(JSON.stringify(item));
+          tr(onclick="javascript:location.href='editUser?userId=" + item._id + "'")  
+            - if (typeof(item.userIdPId) !== 'undefined'){
+            td= item.userIdPId
+            - }
+            
+            - if (typeof(item.IdPdisplayName) !== 'undefined'){
+            td= item.IdPdisplayName
+            - }
+            - if (typeof(item.preferredDisplayName) !== 'undefined'){
+            td= item.preferredDisplayName
+            - }
+
+
+            
+           
+       

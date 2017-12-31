@@ -53,17 +53,24 @@ const passport = require('passport');
 
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-function extractProfile (profile) {
+function extractProfile (profile, req) {
   let imageUrl = '';
   if (profile.photos && profile.photos.length) {
     imageUrl = profile.photos[0].value;
   }
+  console.log("i'm in the extractprofile function, ID= " + profile.id);
+  console.log('i got back ' + JSON.stringify(profile));
+
+
   return {
     id: profile.id,
-    displayName: profile.displayName,
-    image: imageUrl
+    displayName: profile.displayName
+
   };
+
 }
+
+
 
 // Configure the Google strategy for use by Passport.js.
 //
@@ -118,10 +125,11 @@ function authRequired (req, res, next) {
 // Middleware that exposes the user's profile as well as login/logout URLs to
 // any templates. These are available as `profile`, `login`, and `logout`.
 function addTemplateVariables (req, res, next) {
+  console.log('hit addtemplatevars req.user = ' + JSON.stringify(req.user));
   res.locals.profile = req.user;
   res.locals.login = `/auth/login?return=${encodeURIComponent(req.originalUrl)}`;
   res.locals.logout = `/auth/logout?return=${encodeURIComponent(req.originalUrl)}`;
-  console.log("Session vars " + JSON.stringify(req.session) + " user: " + res.user );
+  console.log("Session vars " + JSON.stringify(req.session) + " user: " + req.session.passport.user.displayName );
   next();
 }
 
@@ -166,6 +174,9 @@ app.get('/', (req, res) => {
 })
 
 
+
+
+
 app.get(
   // OAuth 2 callback url. Use this url to configure your OAuth client in the
   // Google Developers console
@@ -176,9 +187,43 @@ app.get(
 
   // Redirect back to the original page, if any
   (req, res) => {
-    const redirect = req.session.oauth2return || '/';
-    delete req.session.oauth2return;
-    res.redirect(redirect);
+
+  	console.log("user authenticated and received IdP profile... in callback");
+    console.log('req var= ' + JSON.stringify(req.user));
+    console.log("looking up user " + req.user.id + " in authorization table");
+    MongoClient.connect(url, function(err, db, preferredName) {
+		if (err) throw err;
+		var query = { userIdPId: req.user.id };
+		db.collection("users").find(query).toArray(function(err, result, preferredName) {
+
+	        if (err) throw err;
+	        console.log(result);
+	        db.close();
+		    
+		    console.log("found user" + JSON.stringify(result));
+		    console.log("length " + result.length)
+		    if (result.length != 0) {
+		    	console.log("found user... adding preferredName and userClass to profile variable");
+
+		    	req.user.userClass = result[0].userClass;
+		    	req.user.preferredDisplayName = result[0].preferredDisplayName;
+
+		    	// redirect to originally requested page
+		    	const redirect = req.session.oauth2return || '/';
+    			delete req.session.oauth2return;
+    			res.redirect(redirect);
+
+		    } else {
+		    	req.logout();
+		    	res.redirect('/register');
+		    }
+	    });
+    });
+
+
+
+
+
   }
 );
 
@@ -188,6 +233,224 @@ app.get('/logout', function(req, res) {
     req.logout();
     res.redirect('https://www.google.com');
 });
+
+app.get('/register', function(req, res) {
+    console.log("logged out!");
+    //req.logout();
+    res.render('register', { user: req.user, title: 'Add User'});
+});
+
+/*
+app.get('/auth/acs', function(req, res) {
+    
+// added to callback function
+});
+*/
+
+
+// ########################################################################## //
+// **************************** User Section ******************************** //
+// ########################################################################## //
+
+
+
+app.get('/addUser', authRequired, (req, res) => {
+	  //console.log(req.body)
+	  
+	 console.log("Adding a new user...");
+	 
+
+	 res.render('addUser', { title: 'Add User'});
+	 //res.send(200,req.body);
+})	
+	
+	
+app.post('/addUser', authRequired, (req, res) => {
+	  //console.log(req.body)
+
+
+
+	MongoClient.connect(url, function(err, db) {
+		  if (err) throw err;
+		  var item = { 
+			  "userIdPId":req.body.userIdPId,  
+		      "IdPdisplayName":req.body.IdPdisplayName,
+			  "preferredDisplayName":req.body.preferredDisplayName,
+			  "userClass":req.body.userClass
+		  };
+		  db.collection("users").insertOne(item, function(err, res) {
+			      if (err) throw err;
+			      console.log("1 user inserted");
+			      db.close();
+			    });
+	}); 
+
+
+
+	  
+	  
+	 console.log("Adding a new user...");
+	 
+	 res.redirect('/listUsers')
+	 //res.send(200,req.body);
+	})
+
+app.get('/listUsers', authRequired, function (req, res) {
+	console.log("entered into list user route");
+       
+	MongoClient.connect(url, function(err, db) {
+		if (err) throw err;
+		var query = { address: "Park Lane 38" };
+		db.collection("users").find().toArray(function(err, result) {
+
+	                if (err) throw err;
+	                console.log(result);
+	                db.close();
+		res.render('listUsers', { title: 'Users', data: result });
+	        });
+        });
+
+
+});
+
+
+
+
+
+// /\/\/\/\/\/\/
+
+
+app.get('/editUser', authRequired, (req, res) => {
+  //console.log(req.body)
+  
+  var queryurl = require('url'); 
+  var queryData = queryurl.parse(req.url, true).query;
+ 
+  var ObjectId = require('mongodb').ObjectId; 
+  var id = queryData.userId;       
+  var o_id = new ObjectId(id);
+
+
+
+ console.log("Editing User..." + queryData.userId);
+ 
+
+
+
+ 	MongoClient.connect(url, function(err, db) {
+			  if (err) throw err;
+			  var query = { "_id": o_id };
+			  console.log("Looking up " + query._id );
+			  console.log("query var " + JSON.stringify(query) );
+			  db.collection("users").find(query).toArray(function(err, result) {
+				  
+				      if (err) throw err;
+				      console.log(result);
+				      db.close();
+
+			
+				
+        res.render('editUser', { title: 'Edit User', data: result, foo: "bar" });
+				    });
+		}); 
+
+
+//res.send(200, req.body);
+ // res.render('addPowder', { title: 'Add Powder', powder: ['IMR 800x', 'Bullseye', 'Clays', 'SR4756']});
+ //res.send(200,req.body);
+})	
+
+
+app.post('/editUser', authRequired, (req, res) => {
+	  //console.log(req.body)
+	
+	  
+	 console.log("updating a user...");
+	 
+	var ObjectId = require('mongodb').ObjectId; 
+  	
+  	var id = req.body.userId;       
+    
+  	//var id = "5a3eb34ba0894762a6c258ea";
+    var o_id = new ObjectId(id);
+
+    console.log("incoming id is " + id);
+
+    //var o_id = "5a3eb34ba0894762a6c258ea";
+
+	var myQuery = { _id: o_id };
+	var newVals = { 
+	  	"userIdPId":req.body.userIdPId,  
+		"IdPdisplayName":req.body.IdPdisplayName,
+		"preferredDisplayName":req.body.preferredDisplayName,
+		"userClass": req.body.userClass
+  	};
+
+
+
+
+
+
+	MongoClient.connect(url, function(err, db) {
+		  if (err) throw err;
+			  
+		  db.collection("users").updateOne(myQuery, newVals, 
+		  		function(err, res) {
+			    	if (err) throw err;
+			      	console.log("1 document inserted");
+			     	db.close();
+
+			    });
+
+	}); 
+
+	res.redirect('/listUsers')
+});
+		
+
+
+app.get('/deleteUser', authRequired, (req, res) => {
+  //console.log(req.body)
+  
+  var queryurl = require('url'); 
+  var queryData = queryurl.parse(req.url, true).query;
+ 
+  var ObjectId = require('mongodb').ObjectId; 
+  var id = queryData.userId;       
+  var o_id = new ObjectId(id);
+
+
+
+ console.log("Deleting User..." + id);
+ 
+
+
+
+ 	MongoClient.connect(url, function(err, db) {
+			  if (err) throw err;
+			  var query = { "_id": o_id };
+			  console.log("deleting " + query._id );
+			  console.log("query var " + JSON.stringify(query) );
+			  db.collection("users").remove(query,function(err, result) {
+				  
+				      if (err) throw err;
+				      console.log(result);
+				      db.close();
+				    });
+			  
+		}); 
+
+ 	res.redirect('listUsers');
+
+})	
+
+
+
+
+
+// /\/\/\/\/\/\/\
+
+
 
 
 
