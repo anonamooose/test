@@ -9,9 +9,13 @@ block content
   h1= "It look's like you would like to register"
   h2= "It's easy.  Fill in the name you'd like to go by and click submit"
   h2= JSON.stringify(user)
+  - console.log("in adduser form" + JSON.stringify(user));
   form(name="register", method="post", id='forms')
     div.input
       p.label(for=preferredDisplayName) Preferred Display Name
       input(type="text", name="preferredDisplayName", id="preferredDisplayName")
       p
+      input(type="hidden", name="userIdPId", value=user.userIdPId)
+      input(type="hidden", name="userIdPEmail", value=user.userIdPEmail)
+      input(type="hidden", name="userIdPDisplayName", value=user.userIdPDisplayName)
       input(type="submit", name="submit")

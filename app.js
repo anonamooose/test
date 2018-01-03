@@ -64,7 +64,8 @@ function extractProfile (profile, req) {
 
   return {
     id: profile.id,
-    displayName: profile.displayName
+    displayName: profile.displayName,
+    emails: profile.emails
 
   };
 
@@ -205,8 +206,9 @@ app.get(
 		    if (result.length != 0) {
 		    	console.log("found user... adding preferredName and userClass to profile variable");
 
-		    	req.user.userClass = result[0].userClass;
-		    	req.user.preferredDisplayName = result[0].preferredDisplayName;
+		    	//req.user.userClass = result[0].userClass;
+		    	//req.user.preferredDisplayName = result[0].preferredDisplayName;
+
 
 		    	// redirect to originally requested page
 		    	const redirect = req.session.oauth2return || '/';
@@ -214,7 +216,18 @@ app.get(
     			res.redirect(redirect);
 
 		    } else {
-		    	req.logout();
+		    	
+		    	// grab data from assertion and store into session variable
+		    	// to use for the registration data
+
+		    	req.session.userIdPId = req.user.id;
+		    	req.session.userIdPDisplayName = req.user.displayName;
+		    	req.session.userIdPEmail = req.user.emails[0].value;
+		    	console.log("req.user before logout = " + JSON.stringify(req.user));
+
+			    req.logout();
+		    	console.log("in callback... req.session = " + JSON.stringify(req.session));
+		    	console.log("req.user after logout = " + JSON.stringify(req.user));
 		    	res.redirect('/register');
 		    }
 	    });
@@ -236,9 +249,38 @@ app.get('/logout', function(req, res) {
 
 app.get('/register', function(req, res) {
     console.log("logged out!");
-    //req.logout();
-    res.render('register', { user: req.user, title: 'Add User'});
+    res.render('register', { user: req.session, title: 'Add User'});
 });
+
+app.post('/register', function(req, res) {
+    console.log("registration post");
+    //req.logout();
+
+
+	MongoClient.connect(url, function(err, db) {
+		  if (err) throw err;
+		  var item = { 
+			  "userIdPId":req.body.userIdPId,  
+		      "userIdPEmail":req.body.userIdPEmail,
+			  "preferredDisplayName":req.body.preferredDisplayName,
+			  "userIdPDisplayName":req.body.userIdPDisplayName
+		  };
+		  db.collection("pendingusers").insertOne(item, function(err, res) {
+			      if (err) {
+			      	throw err;
+			      }
+			      db.close();
+			      console.log("1 user inserted");
+		  });
+
+	}); 
+	res.redirect('/registrationsuccess');
+})	
+	
+
+
+
+
 
 /*
 app.get('/auth/acs', function(req, res) {
@@ -292,7 +334,7 @@ app.post('/addUser', authRequired, (req, res) => {
 	 
 	 res.redirect('/listUsers')
 	 //res.send(200,req.body);
-	})
+})
 
 app.get('/listUsers', authRequired, function (req, res) {
 	console.log("entered into list user route");
@@ -302,12 +344,26 @@ app.get('/listUsers', authRequired, function (req, res) {
 		var query = { address: "Park Lane 38" };
 		db.collection("users").find().toArray(function(err, result) {
 
-	                if (err) throw err;
-	                console.log(result);
-	                db.close();
-		res.render('listUsers', { title: 'Users', data: result });
-	        });
-        });
+            if (err) throw err;
+            console.log(result);
+            db.close();
+		
+
+			MongoClient.connect(url, function(err, db) {
+				if (err) throw err;
+				var query = { address: "Park Lane 38" };
+				db.collection("pendingusers").find().toArray(function(err, pendingusersresult) {
+
+            		if (err) throw err;
+            		console.log(result);
+            		db.close();
+			
+
+					res.render('listUsers', { title: 'Users', data: result, pending: pendingusersresult });
+	    		});
+    		});
+	    });
+    });
 
 
 });
