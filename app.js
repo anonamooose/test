@@ -123,6 +123,14 @@ function authRequired (req, res, next) {
   next();
 }
 
+function adminRequired (req,res,next) {
+	if (!req.session.admin) {
+		res.redirect('/adminRequired.html');
+	} else {
+		next();
+	}
+}
+
 // Middleware that exposes the user's profile as well as login/logout URLs to
 // any templates. These are available as `profile`, `login`, and `logout`.
 function addTemplateVariables (req, res, next) {
@@ -209,6 +217,13 @@ app.get(
 		    	//req.user.userClass = result[0].userClass;
 		    	//req.user.preferredDisplayName = result[0].preferredDisplayName;
 
+		    	if (result[0].userClass === 'admin') {
+		    		console.log("logged in user is an admin"); 
+		    		req.session.admin = true;
+		    	} else {
+		    		console.log("logged in user is NOT an admin");
+		    		req.session.admin = false;
+		    	}
 
 		    	// redirect to originally requested page
 		    	const redirect = req.session.oauth2return || '/';
@@ -263,7 +278,8 @@ app.post('/register', function(req, res) {
 			  "userIdPId":req.body.userIdPId,  
 		      "userIdPEmail":req.body.userIdPEmail,
 			  "preferredDisplayName":req.body.preferredDisplayName,
-			  "userIdPDisplayName":req.body.userIdPDisplayName
+			  "userIdPDisplayName":req.body.userIdPDisplayName,
+			  "status": "pending"
 		  };
 		  db.collection("pendingusers").insertOne(item, function(err, res) {
 			      if (err) {
@@ -294,6 +310,90 @@ app.get('/auth/acs', function(req, res) {
 // ########################################################################## //
 
 
+app.get('/processRegistration', adminRequired, function(req, res) {
+    console.log("process registration");
+
+
+	if (req.session.admin) {
+		console.log("I'm an admin");
+		console.log("action var= " + req.query.action + 'xxx');
+
+			
+		// update status accordingly
+
+		var myQuery = { userIdPId: req.query.IdPId };
+		var newVals = { $set:
+						{
+							"status": req.query.action 
+						}
+					};
+
+							
+
+  		console.log("update payload " + JSON.stringify(newVals));
+
+		MongoClient.connect(url, function(err, db) {
+			  if (err) throw err;
+				  
+			  db.collection("pendingusers").updateOne(myQuery, newVals, 
+			  		function(err, res) {
+				    	if (err) throw err;
+				      	console.log("1 document inserted");
+				     	db.close();
+
+				    });
+
+		}); 
+
+
+		if (req.query.action === 'approve') {
+			console.log("approving request");
+
+
+			MongoClient.connect(url, function(err, db) {
+				if (err) throw err;
+				var query = { userIdPId: req.query.IdPId };
+				db.collection("pendingusers").find(query).toArray(function(err, result) {
+
+		            if (err) throw err;
+		            console.log("found pending user data " + JSON.stringify(result));
+		            db.close();
+				
+
+					// insert into users DB
+
+					MongoClient.connect(url, function(err, db) {
+						  if (err) throw err;
+						  var item = { 
+							  "userIdPId":result[0].userIdPId,  
+						      "IdPDisplayName":result[0].userIdPDisplayName,
+							  "preferredDisplayName":result[0].preferredDisplayName,
+							  "userIdPEmail":result[0].userIdPEmail,
+							  "userClass":"user"
+						  };
+						  db.collection("users").insertOne(item, function(err, res) {
+							      if (err) throw err;
+							      console.log("1 user inserted");
+							      db.close();
+							    });
+					}); 
+			    });
+		    });
+
+
+		} else {
+			console.log("denying request");
+		}
+		
+
+
+	} else {
+		console.log("I'm not an admin"); // this code should never be hit
+	}
+	return res.redirect('/listUsers');
+})	
+
+
 
 app.get('/addUser', authRequired, (req, res) => {
 	  //console.log(req.body)
@@ -315,7 +415,7 @@ app.post('/addUser', authRequired, (req, res) => {
 		  if (err) throw err;
 		  var item = { 
 			  "userIdPId":req.body.userIdPId,  
-		      "IdPdisplayName":req.body.IdPdisplayName,
+		      "IdPDisplayName":req.body.IdPDisplayName,
 			  "preferredDisplayName":req.body.preferredDisplayName,
 			  "userClass":req.body.userClass
 		  };
@@ -436,8 +536,9 @@ app.post('/editUser', authRequired, (req, res) => {
 	var myQuery = { _id: o_id };
 	var newVals = { 
 	  	"userIdPId":req.body.userIdPId,  
-		"IdPdisplayName":req.body.IdPdisplayName,
+		"IdPDisplayName":req.body.IdPDisplayName,
 		"preferredDisplayName":req.body.preferredDisplayName,
+		"userIdPEmail":req.body.userIdPEmail,
 		"userClass": req.body.userClass
   	};
 

@@ -4,29 +4,77 @@ block header
 
 
 block content
+
+
+
+
+
+
   h1= title
   table(id="customers")
     thead
       tr
-        th IdP ID
+        th IdP Email
         th IdP Display Name
         th Preferred Display Name
+        th IdP ID
       tbody
         each item in data
           - console.log(JSON.stringify(item));
           tr(onclick="javascript:location.href='editUser?userId=" + item._id + "'")  
-            - if (typeof(item.userIdPId) !== 'undefined'){
-            td= item.userIdPId
-            - }
-            
-            - if (typeof(item.IdPdisplayName) !== 'undefined'){
-            td= item.IdPdisplayName
+            - if (typeof(item.userIdPEmail) !== 'undefined'){
+            td= item.userIdPEmail
+            - }            
+            - if (typeof(item.IdPDisplayName) !== 'undefined'){
+            td= item.IdPDisplayName
             - }
             - if (typeof(item.preferredDisplayName) !== 'undefined'){
             td= item.preferredDisplayName
             - }
+            - if (typeof(item.userIdPId) !== 'undefined'){
+            td= item.userIdPId
+            - }
+  br
+  br
+  h2= 'Pending approval'
+  table(id="customers")
+    thead
+      tr
+        th IdP email
+        th IdP Display Name
+        th Preferred Display Name
+        th IdP ID
+        th Status
+        th actions
+      tbody
+        each item in pending
+          - console.log(JSON.stringify(item));
+          tr(onclick="doConfirm('monkeyfuck')")  
+            - if (typeof(item.userIdPEmail) !== 'undefined'){
+            td= item.userIdPEmail
+            - }
+            - if (typeof(item.userIdPDisplayName) !== 'undefined'){
+            td= item.userIdPDisplayName
+            - }
+            - if (typeof(item.preferredDisplayName) !== 'undefined'){
+            td= item.preferredDisplayName
+            - }
+            - if (typeof(item.userIdPId) !== 'undefined'){
+            td= item.userIdPId
+            - }
+            - if (typeof(item.status) !== 'undefined'){
+            td= item.status
+            - }
+            td
+              a(href='/processRegistration?action=approve&IdPId=' + item.userIdPId)
+                img(src='approve.png', width=35)
+              &nbsp
+              a(href='/processRegistration?action=deny&IdPId=' + item.userIdPId)
+                img(src='deny.png', width=35)
+
 
 
             
+
            
        
