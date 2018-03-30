@@ -86,7 +86,7 @@ passport.use(new GoogleStrategy({
 // callbackURL: config.get('OAUTH2_CALLBACK'),
 clientID: '727273173081-9llriue33krrtn0cb9bqrgj9r13aibci.apps.googleusercontent.com',
 clientSecret: 'Seh3oFkCpJvi2IbbQmO-pXFY',
-callbackURL: 'https://www.xcryptolab.com/auth/google/callback',
+callbackURL: 'https://myloads.azurewebsites.net/auth/google/callback',
 
   accessType: 'offline'
 }, (accessToken, refreshToken, profile, cb) => {
