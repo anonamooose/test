@@ -25,8 +25,8 @@ AWS.config.update({
 var dynamodb = new AWS.DynamoDB();
 
 var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://10.6.6.22:27017/handloads";
-
+//var url = "mongodb://10.6.6.22:27017/handloads";
+var url = "mongodb://handloads666:mWCDPoa9MX8HdPtQHch8G3197mGMbSJC3FjfxtjJGxGXjCanL5IIYRgCi0xfoF2K8xrqS6wiH9ZI1cT1Ve3ZxA==@handloads666.documents.azure.com:10255/handloads?ssl=true&replicaSet=globaldb"
 
 var app = express();
 
