@@ -1,4 +1,7 @@
 
+ 	
+var deployment = process.env.DEPLOYMENT;
+console.log("deployment is " + deployment);
 /**
  * Module dependencies.
  */
@@ -9,7 +12,9 @@ var express = require('express')
   , asdf = require('./routes/asdf')
   , http = require('http')
   , path = require('path')
-  , bodyParser = require('body-parser');
+  , bodyParser = require('body-parser')
+  , mongoose = require('mongoose');
+
 const uuidv1 = require('uuid/v1');
 
 
@@ -26,12 +31,27 @@ var dynamodb = new AWS.DynamoDB();
 
 var MongoClient = require('mongodb').MongoClient;
 //var url = "mongodb://10.6.6.22:27017/handloads";
-var url = "mongodb://handloads666:mWCDPoa9MX8HdPtQHch8G3197mGMbSJC3FjfxtjJGxGXjCanL5IIYRgCi0xfoF2K8xrqS6wiH9ZI1cT1Ve3ZxA==@handloads666.documents.azure.com:10255/handloads?ssl=true&replicaSet=globaldb"
+var url = "mongodb://handloads666:mWCDPoa9MX8HdPtQHch8G3197mGMbSJC3FjfxtjJGxGXjCanL5IIYRgCi0xfoF2K8xrqS6wiH9ZI1cT1Ve3ZxA==@handloads666.documents.azure.com:10255/handloads?ssl=true&replicaSet=globaldb";
+
+	
+var db2 = mongoose.connect("mongodb://handloads666.documents.azure.com:10255/handloads?ssl=true&replicaSet=globaldb", {
+	auth: {
+	      user: 'handloads666',
+	      password: 'mWCDPoa9MX8HdPtQHch8G3197mGMbSJC3FjfxtjJGxGXjCanL5IIYRgCi0xfoF2K8xrqS6wiH9ZI1cT1Ve3ZxA=='
+	    }
+	})
+.then(() => console.log('connection successful'))
+.catch((err) => console.error(err));
+
+
+var loads = mongoose.model('Loads',
+		new mongoose.Schema({loadDescription: String,loadCaliber: String,loadPowder: String}),
+		'loads');
 
 var app = express();
 
 var session = require('express-session')
-
+//mongoose.connect('mongodb://localhost/test');
 const sessionConfig = {
   resave: false,
   saveUninitialized: false,
@@ -80,13 +100,23 @@ function extractProfile (profile, req) {
 // along with the user's profile. The function must invoke `cb` with a user
 // object, which will be set at `req.user` in route handlers after
 // authentication.
+
+// set callback URL from deployment variable
+if (deployment == 'local') {
+	callbackURL='http://localhost:8666/auth/google/callback'
+} else {
+	callbackURL='https://myloads.azurewebsites.net/auth/google/callback'	
+}
+
+console.log("callbackurl is " + callbackURL);
+
 passport.use(new GoogleStrategy({
 //  clientID: config.get('OAUTH2_CLIENT_ID'),
 //  clientSecret: config.get('OAUTH2_CLIENT_SECRET'),
 // callbackURL: config.get('OAUTH2_CALLBACK'),
 clientID: '727273173081-9llriue33krrtn0cb9bqrgj9r13aibci.apps.googleusercontent.com',
 clientSecret: 'Seh3oFkCpJvi2IbbQmO-pXFY',
-callbackURL: 'https://myloads.azurewebsites.net/auth/google/callback',
+callbackURL: callbackURL,
 
   accessType: 'offline'
 }, (accessToken, refreshToken, profile, cb) => {
@@ -1128,6 +1158,53 @@ app.get('/listLoads', function (req, res) {
 
 });
 
+app.get('/listLoadCals', function (req, res) {
+	console.log("entered into list load cals route");
+	
+        
+	/*var db2 = mongoose.connection;
+	db2.on('error', console.error.bind(console, 'connection error:'));
+	db2.once('open', function() {
+	  // we're connected!
+		console.log("were connected");
+
+		
+	});
+	*/	
+	
+	loads.find(function (err, loads) {
+		  if (err) return console.error(err);
+		  console.log("dumping loads from mongoose");
+		  console.log(loads);
+		  console.log("done with mongoose");
+		  
+			// Make distinct
+			
+		  var unique = Object.create(null); // empty object, no inheritance
+		  for (var i = 0; i < loads.length; i++) {
+		      var loadCal = loads[i]['loadCaliber'];
+		      if (true) {
+		          if (!(loadCal in unique)) { // not seen this `full name` before
+		              unique[loadCal] = loads[i];
+		        	 // unique[loadCal] = "burrito";
+		          } 
+		      }
+		  }
+			
+			console.log("dumping unique loads");
+			//var fuckyou = JSON.parse(unique);
+			//console.log(fuckyou);
+			console.log("done with unique loads");
+			res.render('listLoads', { title: 'Loads', data: unique });
+		  
+		})
+		
+
+		  
+	
+
+});
+
 app.get('/detailLoad', authRequired, addTemplateVariables, function (req, res) {
 	console.log("entered into load details route " + req.query.loadId);
 	
@@ -1429,7 +1506,7 @@ app.get('/deleteLoad', (req, res) => {
 
 
 // all environments
-app.set('port', process.env.PORT || 80);
+app.set('port', process.env.PORT || 8666);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
