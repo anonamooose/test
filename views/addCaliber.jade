@@ -3,16 +3,17 @@ extends layout
 block header
 
 block content
-  h1= title
-  form(name="add-caliber", method="post", id='forms')
-    div.input
-      p.label(for=calName) Caliber Name
-      input(type="text", name="calName", id="calName")
-      p.label Caliber Class
-      input(type="text", name="calClass")
-      p.label Case Type
-      input(type="text", name="caseType")
-      p.label Primer Type
-      input(type="text", name="primerType")
-      p
-      input(type="submit", name="submit")
+  div(align="center")
+    form(name="add-caliber", method="post", id='forms')
+      div(style="display: inline-block; text-align: left;")
+        h1= title
+        label Caliber Name
+        input(type="text", name="calName")
+        label Caliber Class
+        input(type="text", name="calClass")
+        label Case Type
+        input(type="text", name="caseType")
+        label Primer Type
+        input(type="text", name="primerType")
+        p
+        input(type="submit", name="submit")

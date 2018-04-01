@@ -2,20 +2,20 @@ extends layout
 
 block header
 
-
 block content
-  h1= title
-  form(name="add-user", method="post", id='forms')
-    div.input
-      p.label(for=userIdPId) IdP ID 
-      input(type="text", name="userIdPId", id="userIdPId")
-      p.label IdPDisplayName
-      input(type="text", name="IdPDisplayName")
-      p.label Preferred Display Name
-      input(type="text", name="preferredDisplayName")
-      p.label Preferred IdP Email
-      input(type="text", name="userIdPEmail")
-      p.label user class (user/admin)
-      input(type="text", name="userClass")
-      p
-      input(type="submit", name="submit")
+  div(align="center")
+    form(name="add-user", method="post", id='forms')
+      div(style="display: inline-block; text-align: left;")
+        h1= title
+        label(for=userIdPId) IdP ID 
+        input(type="text", name="userIdPId", id="userIdPId")
+        label IdPDisplayName
+        input(type="text", name="IdPDisplayName")
+        label Preferred Display Name
+        input(type="text", name="preferredDisplayName")
+        label Preferred IdP Email
+        input(type="text", name="userIdPEmail")
+        label user class (user/admin)
+        input(type="text", name="userClass")
+        p
+        input(type="submit", name="submit")

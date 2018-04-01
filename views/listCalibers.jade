@@ -3,33 +3,28 @@ extends layout
 block header
 
 block content
-  h1= title
-  a(href="/addCaliber")
-    img(src="add.jpg" width="30")
-  table(id="customers")
-    thead
-      tr
-        th Caliber Name
-        th Caliber Class
-        th Case Type
-        th Primer Type
-      tbody
-        each item in data
-          - console.log(JSON.stringify(item));
-          tr(onclick="javascript:location.href='editCaliber?caliberId=" + item._id + "'")  
-            - if (typeof(item.calName) !== 'undefined'){
-            td= item.calName
-            - }
+  div(align="center")
+    div(style="display: inline-block; text-align: left; width: 80% ;max-width: 400px")
+      h1= title
+      a(href="/addCaliber")
+        img(src="add.jpg" width="25")
+      p
+      table(id="customers")
+        thead
+          tr
+            th Caliber Name
+            th Caliber Class
+        tbody
+          each item in data
+            - console.log(JSON.stringify(item));
+            tr(onclick="javascript:location.href='editCaliber?caliberId=" + item._id + "'")  
+              - if (typeof(item.calName) !== 'undefined'){
+              td= item.calName
+              - }
             
-            - if (typeof(item.calClass) !== 'undefined'){
-            td= item.calClass
-            - }
-            - if (typeof(item.caseType) !== 'undefined'){
-            td= item.caseType
-            - }
-            - if (typeof(item.primerType) !== 'undefined'){
-            td= item.primerType
-            - }
+              - if (typeof(item.calClass) !== 'undefined'){
+              td= item.calClass
+              - }
 
 
             
