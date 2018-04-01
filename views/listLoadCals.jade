@@ -1,0 +1,17 @@
+extends layout
+
+block header
+
+block content
+  h1="Select a caliber"
+  h3
+    a(href='/listLoads') show all
+  table(id="customers")
+    thead
+      tbody
+        each item in data
+          - console.log(JSON.stringify(item));
+          tr(onclick="javascript:location.href='listLoads?loadCal=" + item.loadCaliber + "'")           
+            - if (typeof(item.loadCaliber) !== 'undefined'){
+            td= item.loadCaliber
+            - }    

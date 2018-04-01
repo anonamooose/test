@@ -16,9 +16,7 @@ var express = require('express')
   , mongoose = require('mongoose');
 
 const uuidv1 = require('uuid/v1');
-
-
-
+const sanitize = require('sanitize');
 
 var AWS = require("aws-sdk");
 AWS.config.update({
@@ -61,8 +59,7 @@ const sessionConfig = {
 };
 
 app.use(session(sessionConfig));
-
-
+app.use(sanitize.middleware);
 app.use(bodyParser.urlencoded({extended: true}))
 
 
@@ -1141,17 +1138,24 @@ app.post('/addLoads', authRequired, (req, res) => {
 
 app.get('/listLoads', function (req, res) {
 	console.log("entered into list loads route");
-	
+   
+    var loadCal = req.queryString('loadCal');
+	console.log('loadCal from querystring = ' + loadCal);
         MongoClient.connect(url, function(err, db) {
 		if (err) throw err;
-                var query = { address: "Park Lane 38" };
-                db.collection("loads").find().toArray(function(err, result) {
+				var query;
+                if (loadCal != null) {
+                	query = { loadCaliber: loadCal };
+                } else {
+                	query = null;
+                }
+				
+                db.collection("loads").find(query).toArray(function(err, result) {
 
 	                if (err) throw err;
 	                console.log(result);
 	                console.log("got load summaries");
-			db.close();
-    
+			db.close();  
         		res.render('listLoads', { title: 'Loads', data: result });
         	});
     	});
@@ -1192,10 +1196,8 @@ app.get('/listLoadCals', function (req, res) {
 		  }
 			
 			console.log("dumping unique loads");
-			//var fuckyou = JSON.parse(unique);
-			//console.log(fuckyou);
 			console.log("done with unique loads");
-			res.render('listLoads', { title: 'Loads', data: unique });
+			res.render('listLoadCals', { title: 'Loads', data: unique });
 		  
 		})
 		
