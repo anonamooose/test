@@ -6,6 +6,8 @@ body {
 a {
   color: #00B7FF;
 }
+
+
 #customers {
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     border-collapse: collapse;
@@ -38,10 +40,10 @@ a {
     border-radius: 4px;
     box-sizing: border-box;
 }
-
+ 
 #forms input[type=submit] {
     width: 100%;
-    background-color: #4CAF50;
+    background-color: #4CAF5 0;
     color: white;
     padding: 14px 20px;
     margin: 8px 0;
@@ -63,3 +65,18 @@ a {
     display: block;
     
 }
+
+#contentpane div {
+    display: inline-block; 
+    text-align: center; 
+    width: 80%;
+    max-width: 400px;
+}
+
+
+#summary
+
+#detail
+
+#
+
