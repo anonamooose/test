@@ -48,7 +48,7 @@ var loads = mongoose.model('Loads',
 
 var app = express();
 
-var session = require('express-session')
+var session = require('express-session');
 //mongoose.connect('mongodb://localhost/test');
 const sessionConfig = {
   resave: false,
@@ -61,8 +61,7 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(sanitize.middleware);
 app.use(bodyParser.urlencoded({extended: true}))
-
-
+app.use(addTemplateVariables);
 
 
 const passport = require('passport');
@@ -161,11 +160,15 @@ function adminRequired (req,res,next) {
 // Middleware that exposes the user's profile as well as login/logout URLs to
 // any templates. These are available as `profile`, `login`, and `logout`.
 function addTemplateVariables (req, res, next) {
-  console.log('hit addtemplatevars req.user = ' + JSON.stringify(req.user));
-  res.locals.profile = req.user;
-  res.locals.login = `/auth/login?return=${encodeURIComponent(req.originalUrl)}`;
-  res.locals.logout = `/auth/logout?return=${encodeURIComponent(req.originalUrl)}`;
-  console.log("Session vars " + JSON.stringify(req.session) + " user: " + req.session.passport.user.displayName );
+  if (typeof(req.user) !== 'undefined') { // can only add variables if logged in
+	  console.log('hit addtemplatevars req.user = ' + JSON.stringify(req.user));
+	  res.locals.profile = req.user;
+	  res.locals.login = `/auth/login?return=${encodeURIComponent(req.originalUrl)}`;
+	  res.locals.logout = `/auth/logout?return=${encodeURIComponent(req.originalUrl)}`;
+	  console.log("Session vars " + JSON.stringify(req.session) + " user: " + req.session.passport.user.displayName );
+  } else {
+	  console.log("in addtemplatevars no req.user");
+  }
   next();
 }
 
@@ -184,7 +187,6 @@ app.use(passport.session());
 app.get(
   // Login url
   '/auth/login',
-
   // Save the url of the user's current page so the app can redirect back to
   // it after authorization
   (req, res, next) => {
@@ -286,7 +288,7 @@ app.get(
 app.get('/logout', function(req, res) {
     console.log("logged out!");
     req.logout();
-    res.redirect('https://www.google.com');
+    res.redirect('https://accounts.google.com/logout');
 });
 
 app.get('/register', function(req, res) {
@@ -433,7 +435,7 @@ app.get('/addUser', authRequired, (req, res) => {
 })	
 	
 	
-app.post('/addUser', authRequired, (req, res) => {
+app.post('/addUser', authRequired, adminRequired, (req, res) => {
 	  //console.log(req.body)
 
 
@@ -463,7 +465,7 @@ app.post('/addUser', authRequired, (req, res) => {
 	 //res.send(200,req.body);
 })
 
-app.get('/listUsers', authRequired, function (req, res) {
+app.get('/listUsers', authRequired, adminRequired, function (req, res) {
 	console.log("entered into list user route");
        
 	MongoClient.connect(url, function(err, db) {
@@ -1162,7 +1164,7 @@ app.get('/listLoads', function (req, res) {
 
 });
 
-app.get('/listLoadCals', function (req, res) {
+app.get('/listLoadCals', addTemplateVariables, function (req, res) {
 	console.log("entered into list load cals route");
 	
         

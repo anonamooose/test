@@ -18,6 +18,8 @@ html( lang="en" )
     script( src='//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js' )
     script( src='//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js' )
   
+    - console.log("profile " + JSON.stringify(profile) + " email " + JSON.stringify(email) );
+  
     nav.navbar.navbar-default
       .container-fluid
         .navbar-header
@@ -38,8 +40,17 @@ html( lang="en" )
             li
               a(href='/listUsers') Users
           ul.nav.navbar-nav.navbar-right
+            - if ((typeof(profile) !== 'undefined' && typeof(profile.displayName) !== 'undefined')){
             li
-              a(href='/auth/logout') Logout
+              a #{profile.displayName}
+            li  
+              a(href='/logout') Logout
+            - } else {
+            li  
+              a(href='/auth/login') Login
+            - } 
+            
+              
                 
  
     block header
